@@ -1,0 +1,236 @@
+{
+  "name": "read_email",
+  "description": "Read emails from the user's mailbox.\n\nUse either a specific message_id or search filters to retrieve one or more emails.",
+  "arguments": {
+    "message_id": {
+      "description": "Unique ID of the email to read. If provided, other filters are ignored.",
+      "type": "str",
+      "optional": true
+    },
+    "query": {
+      "description": "Free-text search using standard email operators (e.g., from:, subject:, before:, after:, label:). Ignored if message_id is provided.",
+      "type": "str",
+      "optional": true
+    },
+    "labels": {
+      "description": "Filter by labels/folders (e.g., [\"INBOX\", \"STARRED\"]).",
+      "type": "list[str]",
+      "optional": true
+    },
+    "max_results": {
+      "description": "Maximum number of emails to return.",
+      "type": "int",
+      "default": 50,
+      "optional": true
+    },
+    "include_body": {
+      "description": "Whether to include the full HTML/text body for each email.",
+      "type": "bool",
+      "default": true,
+      "optional": true
+    }
+  },
+  "returns": {
+    "description": "A list of emails or a single email. Each email may include:\n- message_id (str)\n- thread_id (str)\n- subject (str)\n- from (str)\n- to (list[str])\n- cc (list[str])\n- bcc (list[str])\n- date (ISO 8601 str)\n- snippet (str)\n- body_html (str)\n- body_text (str)\n- labels (list[str])\n- attachments (list of {filename, mime_type, size_bytes, attachment_id})",
+    "type": "list|object"
+  }
+}
+    
+
+{
+  "name": "send_email",
+  "description": "Send an email from the user's mailbox.\n\nCreates (and sends) a new message, optionally replying in an existing thread and/or attaching files.",
+  "arguments": {
+    "to": {
+      "description": "Primary recipients.",
+      "type": "list[str]"
+    },
+    "subject": {
+      "description": "Email subject line.",
+      "type": "str"
+    },
+    "body_text": {
+      "description": "Plain-text body. Provide at least one of body_text or body_html.",
+      "type": "str",
+      "optional": true
+    },
+    "body_html": {
+      "description": "HTML body. Provide at least one of body_text or body_html.",
+      "type": "str",
+      "optional": true
+    },
+    "cc": {
+      "description": "Carbon-copy recipients.",
+      "type": "list[str]",
+      "optional": true
+    },
+    "bcc": {
+      "description": "Blind-carbon-copy recipients.",
+      "type": "list[str]",
+      "optional": true
+    },
+    "attachments": {
+      "description": "Attachments to include. Each item: {filename, mime_type, content_base64} or {file_id}.",
+      "type": "list[object]",
+      "optional": true
+    },
+    "in_reply_to": {
+      "description": "Message ID this email replies to.",
+      "type": "str",
+      "optional": true
+    },
+    "thread_id": {
+      "description": "Existing thread ID to continue (if known).",
+      "type": "str",
+      "optional": true
+    },
+    "headers": {
+      "description": "Additional RFC-822 headers (key/value).",
+      "type": "object",
+      "optional": true
+    },
+    "priority": {
+      "description": "Message priority (e.g., \"normal\", \"high\", \"low\").",
+      "type": "str",
+      "default": "normal",
+      "optional": true
+    },
+    "schedule_time": {
+      "description": "Optional future send time in ISO 8601 (UTC). If omitted, send immediately.",
+      "type": "str",
+      "optional": true
+    }
+  },
+  "returns": {
+    "description": "Information about the sent (or scheduled) message:\n- status: \"sent\" | \"scheduled\"\n- message_id (str)\n- thread_id (str)\n- scheduled_time (ISO 8601 str, present if scheduled)\n- date (ISO 8601 str, present if sent immediately)",
+    "type": "object"
+  }
+}
+
+
+{
+  "name": "write_email",
+  "description": "Create or update an email draft without sending.\n\nUse this to compose a message and save it as a draft. You can later modify or send the draft.",
+  "arguments": {
+    "draft_id": {
+      "description": "Existing draft ID to update. If omitted, a new draft is created.",
+      "type": "str",
+      "optional": true
+    },
+    "to": {
+      "description": "Primary recipients.",
+      "type": "list[str]",
+      "optional": true
+    },
+    "subject": {
+      "description": "Email subject line.",
+      "type": "str",
+      "optional": true
+    },
+    "body_text": {
+      "description": "Plain-text body.",
+      "type": "str",
+      "optional": true
+    },
+    "cc": {
+      "description": "Carbon-copy recipients.",
+      "type": "list[str]",
+      "optional": true
+    },
+    "bcc": {
+      "description": "Blind-carbon-copy recipients.",
+      "type": "list[str]",
+      "optional": true
+    },
+    "attachments": {
+      "description": "Attachments for the draft. Each item: {filename, mime_type, content_base64} or {file_id}.",
+      "type": "list[object]",
+      "optional": true
+    },
+    "in_reply_to": {
+      "description": "Message ID this draft would reply to.",
+      "type": "str",
+      "optional": true
+    },
+    "headers": {
+      "description": "Additional RFC-822 headers (key/value).",
+      "type": "object",
+      "optional": true
+    }
+  },
+  "returns": {
+    "description": "Information about the saved draft:\n- draft_id (str)\n- message_id (str)\n- thread_id (str)\n- updated_at (ISO 8601 str)",
+    "type": "object"
+  }
+}
+
+{
+  "name": "PayRepayment",
+  "description": "Trigger a repayment payment and write (or update) related metadata.\n\nUse this to initiate the repayment flow while submitting searchable/display metadata and admin fields.",
+  "arguments": {
+    "entityName": {
+      "description": "Name of the entity (e.g., entity type \"Repayment\").",
+      "type": "str"
+    },
+    "entityId": {
+      "description": "Unique identifier of the record. Max length: 64 characters.",
+      "type": "str"
+    },
+    "entityGroupId": {
+      "description": "Grouping identifier (for admin use such as future bulk deletion). Custom-defined format. Max length: 64 characters.",
+      "type": "str",
+      "optional": true
+    },
+    "displayName": {
+      "description": "Display name. Max length: 50 characters.",
+      "type": "str"
+    },
+    "description": {
+      "description": "User-facing description shown in the UI. Max length: 2000 characters.",
+      "type": "str"
+    },
+    "logoURL": {
+      "description": "Thumbnail URL. Text length ≤ 512 characters; recommended size 48×48; file size ≤ 20 KB.",
+      "type": "str"
+    },
+    "keywords": {
+      "description": "Search keywords. Array total length recommended ≤ 1000 characters.",
+      "type": "list[str]",
+      "optional": true
+    },
+    "rankingHint": {
+      "description": "Sorting weight for ranking. Floating-point number from 0 to 100.",
+      "type": "number",
+      "optional": true
+    },
+    "expirationTime": {
+      "description": "Data expiration time (e.g., copyright expiry). Numeric timestamp (seconds or milliseconds—integration-defined). Max 20 characters if stored as string.",
+      "type": "number",
+      "optional": true
+    },
+    "metadataModificationTime": {
+      "description": "Last metadata update time (for ordering). Numeric timestamp (seconds or milliseconds—integration-defined). Max 20 characters if stored as string.",
+      "type": "number",
+      "optional": true
+    },
+    "activityType": {
+      "description": "Activity/behavior types (optional/NA).",
+      "type": "list[str]",
+      "optional": true
+    },
+    "isPublicData": {
+      "description": "Whether this is public-domain data (i.e., not user-specific).",
+      "type": "bool",
+      "optional": true
+    },
+    "extras": {
+      "description": "Additional extension fields; structure defined by the integrating business.",
+      "type": "object",
+      "optional": true
+    }
+  },
+  "returns": {
+    "description": "Execution result and a snapshot of saved metadata:\n- status: \"success\" | \"pending\" | \"failed\"\n- paymentId: Payment transaction ID (str)\n- entityId: Echoed unique entity ID (str)\n- processedAt: Processing time (ISO 8601 string)\n- message: Human-readable status message (str)\n- snapshot: Saved key fields snapshot (object)",
+    "type": "object"
+  }
+}
